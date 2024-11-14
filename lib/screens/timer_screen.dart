@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:my_interval_running/models/timer_state.dart';
 import 'package:my_interval_running/widgets/time_controls.dart';
@@ -16,7 +15,6 @@ class TimerScreenState extends State<TimerScreen> {
   final TimerState timerState = TimerState();
   final TextEditingController _messageController = TextEditingController();
   // 클래스 내부
-  final player = AudioPlayer();
 
   //테스트 코드
   final FlutterTts flutterTts = FlutterTts();
@@ -45,7 +43,6 @@ class TimerScreenState extends State<TimerScreen> {
 
   @override
   void dispose() {
-    player.dispose();
     timerState.dispose();
     _messageController.dispose();
     flutterTts.stop(); //테스트 코드
