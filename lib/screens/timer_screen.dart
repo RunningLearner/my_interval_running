@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:my_interval_running/models/timer_state.dart';
 import 'package:my_interval_running/widgets/time_controls.dart';
@@ -14,6 +15,8 @@ class TimerScreen extends StatefulWidget {
 class TimerScreenState extends State<TimerScreen> {
   final TimerState timerState = TimerState();
   final TextEditingController _messageController = TextEditingController();
+  // 클래스 내부
+  final player = AudioPlayer();
 
   //테스트 코드
   final FlutterTts flutterTts = FlutterTts();
@@ -32,6 +35,7 @@ class TimerScreenState extends State<TimerScreen> {
   }
 
   Future<void> _testTts() async {
+    print("테스트가 실행되었습니다");
     String testMessage = _messageController.text.isEmpty
         ? "TTS 테스트입니다"
         : _messageController.text;
@@ -41,6 +45,7 @@ class TimerScreenState extends State<TimerScreen> {
 
   @override
   void dispose() {
+    player.dispose();
     timerState.dispose();
     _messageController.dispose();
     flutterTts.stop(); //테스트 코드
@@ -103,7 +108,8 @@ class TimerScreenState extends State<TimerScreen> {
                       labelText: '알림 메시지',
                       hintText: '타이머 종료시 표시할 메시지를 입력하세요',
                     ),
-                    onChanged: (value) => timerState.setNotificationMessage(value),
+                    onChanged: (value) =>
+                        timerState.setNotificationMessage(value),
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
@@ -137,5 +143,4 @@ class TimerScreenState extends State<TimerScreen> {
       ),
     );
   }
-
 }
