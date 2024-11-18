@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:my_interval_running/models/timer_state.dart';
 
@@ -16,16 +15,6 @@ class TimerControls extends StatelessWidget {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () => timerState.setTime(60),
-              child: const Text('1분'),
-            ),
-            const SizedBox(width: 10),
-            ElevatedButton(
-              onPressed: () => timerState.setTime(300),
-              child: const Text('5분'),
-            ),
-            const SizedBox(width: 10),
             ElevatedButton(
               onPressed: isRunning ? timerState.stopTimer : timerState.startTimer,
               child: Text(isRunning ? '정지' : '시작'),
