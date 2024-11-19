@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:my_interval_running/models/timer_interval.dart';
 import 'package:my_interval_running/models/timer_state.dart';
+import 'package:my_interval_running/services/notification_service.dart';
+import 'package:my_interval_running/services/time_manager.dart';
 import 'package:my_interval_running/widgets/time_controls.dart';
 import 'package:my_interval_running/widgets/timer_display.dart';
 
@@ -11,13 +14,27 @@ class TimerScreen extends StatefulWidget {
 }
 
 class TimerScreenState extends State<TimerScreen> {
-  final TimerState timerState = TimerState();
+  late final TimerState _timerState;
+  late final NotificationService _notificationService;
+  late final TimerManager _timerManager;
   final List<TextEditingController> _messageControllers = [];
   final List<TextEditingController> _timeControllers = [];
-  
+  final List<TextEditingController> _nameControllers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _timerState = TimerState();
+    _notificationService = NotificationService();
+    _timerManager = TimerManager(
+      timerState: _timerState,
+      notificationService: _notificationService,
+    );
+  }
+
   @override
   void dispose() {
-    timerState.dispose();
+    _timerManager.dispose();
     for (var controller in _messageControllers) {
       controller.dispose();
     }
@@ -29,6 +46,7 @@ class TimerScreenState extends State<TimerScreen> {
 
   void _addInterval() {
     setState(() {
+      _nameControllers.add(TextEditingController());
       _messageControllers.add(TextEditingController());
       _timeControllers.add(TextEditingController());
     });
@@ -36,16 +54,28 @@ class TimerScreenState extends State<TimerScreen> {
 
   void _saveIntervals() {
     final intervals = <TimerInterval>[];
-    
+
     for (var i = 0; i < _messageControllers.length; i++) {
       final seconds = int.tryParse(_timeControllers[i].text) ?? 0;
       final message = _messageControllers[i].text;
+      final name = _nameControllers[i].text;
       if (seconds > 0) {
-        intervals.add(TimerInterval(seconds, message));
+        intervals.add(TimerInterval(seconds, message, name));
       }
     }
-    
-    timerState.setIntervals(intervals);
+
+    _timerState.setIntervals(intervals);
+  }
+
+  void _removeInterval(int index) {
+    setState(() {
+      _messageControllers[index].dispose();
+      _timeControllers[index].dispose();
+      _nameControllers[index].dispose();
+      _messageControllers.removeAt(index);
+      _timeControllers.removeAt(index);
+      _nameControllers.removeAt(index);
+    });
   }
 
   @override
@@ -58,33 +88,57 @@ class TimerScreenState extends State<TimerScreen> {
             child: ListView.builder(
               itemCount: _messageControllers.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: TextField(
-                          controller: _timeControllers[index],
+                return Card(
+                  margin: const EdgeInsets.all(8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: _nameControllers[index],
                           decoration: const InputDecoration(
-                            labelText: '시간(초)',
-                            border: OutlineInputBorder(),
-                          ),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 2,
-                        child: TextField(
-                          controller: _messageControllers[index],
-                          decoration: const InputDecoration(
-                            labelText: '알림 메시지',
+                            labelText: '구간 이름',
                             border: OutlineInputBorder(),
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: TextField(
+                                controller: _timeControllers[index],
+                                decoration: const InputDecoration(
+                                  labelText: '시간(초)',
+                                  border: OutlineInputBorder(),
+                                ),
+                                keyboardType: TextInputType.number,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              flex: 2,
+                              child: TextField(
+                                controller: _messageControllers[index],
+                                decoration: const InputDecoration(
+                                  labelText: '알림 메시지',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _removeInterval(index),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -95,20 +149,22 @@ class TimerScreenState extends State<TimerScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: _addInterval,
-                  child: const Text('구간 추가'),
+                  icon: const Icon(Icons.add),
+                  label: const Text('구간 추가'),
                 ),
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: _saveIntervals,
-                  child: const Text('저장'),
+                  icon: const Icon(Icons.save),
+                  label: const Text('저장'),
                 ),
               ],
             ),
           ),
-          TimerDisplay(timerState: timerState),
+          TimerDisplay(timerState: _timerState),
           const SizedBox(height: 20),
-          TimerControls(timerState: timerState),
+          TimerControls(timerManager: _timerManager),
         ],
       ),
     );

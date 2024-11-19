@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:my_interval_running/models/timer_state.dart';
+import 'package:my_interval_running/services/time_manager.dart';
 
 class TimerControls extends StatelessWidget {
-  final TimerState timerState;
+  final TimerManager timerManager;
 
-  const TimerControls({super.key, required this.timerState});
+  const TimerControls({super.key, required this.timerManager});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-      stream: timerState.isRunningStream,
+      stream: timerManager.timerState.isRunningStream,
       builder: (context, snapshot) {
         final isRunning = snapshot.data ?? false;
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: isRunning ? timerState.stopTimer : timerState.startTimer,
+              onPressed: isRunning ? timerManager.stopTimer : timerManager.startTimer,
               child: Text(isRunning ? '정지' : '시작'),
             ),
             const SizedBox(width: 10),
             ElevatedButton(
-              onPressed: timerState.resetTimer,
+              onPressed: timerManager.resetTimer,
               child: const Text('리셋'),
             ),
           ],

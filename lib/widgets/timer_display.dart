@@ -29,10 +29,21 @@ class TimerDisplay extends StatelessWidget {
         StreamBuilder<int>(
           stream: timerState.currentIntervalStream,
           builder: (context, snapshot) {
-            final currentInterval = snapshot.data ?? 0;
-            return Text(
-              '구간 ${currentInterval + 1}',
-              style: const TextStyle(fontSize: 24),
+            final currentIndex = snapshot.data ?? 0;
+            final intervals = timerState.intervals;
+            
+            // 구간이 없거나 인덱스가 범위를 벗어나면 빈 위젯 반환
+            if (intervals.isEmpty || currentIndex >= intervals.length) {
+              return const SizedBox.shrink();
+            }
+
+            return Column(
+              children: [
+                Text(
+                  intervals[currentIndex].name,
+                  style: const TextStyle(fontSize: 24),
+                ),
+              ],
             );
           },
         ),
